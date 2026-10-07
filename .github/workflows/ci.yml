@@ -1,0 +1,33 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+  schedule: [{ cron: '17 */6 * * *' }]
+permissions: { contents: read }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: '24' }
+      - run: node --test test/*.test.mjs
+      - name: Site copy of the parsers is current
+        run: diff src/lockfiles.mjs site/public/lockfiles.mjs
+      - name: Site scripts parse
+        run: for f in site/public/*.js site/public/*.mjs site/worker/*.js; do node --check "$f"; done
+      - name: No em or en dashes in user-facing text
+        run: |
+          if grep -rnP "[\x{2013}\x{2014}]" site/public README.md SECURITY.md docs; then exit 1; fi
+  dogfood:
+    # The Action scans its own repository (no lockfiles of its own: it has no dependencies) plus a fixture project.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: ./
+        with: { open-issues: 'false', fail-on: never, product-name: CRA Clock }

@@ -1,0 +1,37 @@
+name: CRA Clock
+description: SBOM, actively exploited vulnerability detection (CISA KEV), and the EU Cyber Resilience Act Article 14 24h/72h/14d reporting clock with ENISA drafts.
+author: Gautam Khosla
+branding:
+  icon: clock
+  color: red
+inputs:
+  github-token:
+    description: Token used to open and update CRA Clock issues (needs issues:write). Defaults to the workflow token.
+    default: ${{ github.token }}
+  product-name:
+    description: Product name used in reports and ENISA drafts. Defaults to the repository name.
+    default: ''
+  product-version:
+    description: Product version recorded in the SBOM. Defaults to the ref name.
+    default: ''
+  open-issues:
+    description: Open one issue per actively exploited vulnerability with the live Article 14 clock.
+    default: 'true'
+  fail-on:
+    description: "exploited (default), likely (exploited or EPSS above threshold), or never"
+    default: exploited
+  epss-threshold:
+    description: EPSS probability at or above which a vulnerability counts as likely to be exploited.
+    default: '0.1'
+  output-dir:
+    description: Where sbom.cdx.json, vex.cdx.json and report.md are written.
+    default: cra-clock
+outputs:
+  components: { description: Number of components found }
+  exploited: { description: Number of actively exploited vulnerabilities (CISA KEV) }
+  likely: { description: Number of vulnerabilities above the EPSS threshold }
+  sbom: { description: Path to the CycloneDX 1.6 SBOM }
+  vex: { description: Path to the CycloneDX 1.6 VEX }
+runs:
+  using: node24
+  main: src/main.mjs
