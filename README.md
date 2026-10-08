@@ -37,6 +37,8 @@ reporting; Article 71, dates of application) and the European Commission's
 
 ## Install
 
+The GitHub Marketplace listing goes live with v1.0.0. Until then, reference the Action by repository as shown below.
+
 ```yaml
 # .github/workflows/cra-clock.yml
 name: cra-clock
