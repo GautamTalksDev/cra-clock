@@ -41,7 +41,8 @@ export async function osvDetails(ids, fetcher = fetch, concurrency = 8) {
         for (const a of v.affected || []) for (const r of a.ranges || []) for (const e of r.events || []) if (e.fixed) fixed.push(e.fixed);
         out.set(id, { id, summary: String(v.summary || v.details || '').slice(0, 300), aliases: v.aliases || [], cves: [...new Set(cves)], severity: (v.database_specific && v.database_specific.severity) || null, fixed: [...new Set(fixed)].slice(0, 5), published: v.published || null, refs: (v.references || []).map((r) => r.url).filter((u) => /^https:\/\//.test(u)).slice(0, 5) });
       } catch {
-        out.set(id, { id, summary: '', aliases: [], cves: /^CVE-/.test(id) ? [id] : [], severity: null, fixed: [], published: null, refs: [] });
+        // never treat a failed lookup as "nothing to see": assess() marks it intel-incomplete
+        out.set(id, { id, summary: '', aliases: [], cves: /^CVE-\d{4}-\d{4,}$/.test(id) ? [id] : [], severity: null, fixed: [], published: null, refs: [], incomplete: true });
       }
     }
   }));
@@ -56,15 +57,19 @@ export async function kev(fetcher = fetch) {
   return { catalogVersion: j.catalogVersion, released: j.dateReleased, map: m };
 }
 
-/** EPSS for CVEs -> Map(CVE -> {epss, percentile}) */
+/** EPSS for CVEs -> Map(CVE -> {epss, percentile}); m.failed is the Set of CVEs whose EPSS lookup failed */
 export async function epss(cves, fetcher = fetch) {
   const m = new Map();
+  m.failed = new Set();
   const list = [...new Set(cves)];
   for (let i = 0; i < list.length; i += 100) {
+    const chunk = list.slice(i, i + 100);
     try {
-      const j = await getJson(fetcher, `${EPSS}?cve=${list.slice(i, i + 100).join(',')}`);
+      const j = await getJson(fetcher, `${EPSS}?cve=${chunk.join(',')}`);
       for (const d of j.data || []) m.set(d.cve, { epss: Number(d.epss), percentile: Number(d.percentile) });
-    } catch { /* EPSS is advisory; carry on without it */ }
+    } catch {
+      for (const c of chunk) m.failed.add(c); // assess() marks these intel-incomplete instead of "known"
+    }
   }
   return m;
 }

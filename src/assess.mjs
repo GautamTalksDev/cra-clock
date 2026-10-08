@@ -1,23 +1,29 @@
 // Turns components + intelligence into findings, and findings into the CRA Article 14 clock.
 // Tiers:  exploited = a CVE of the vulnerability is in CISA KEV (reliable evidence of exploitation in the wild)
 //         likely    = EPSS >= threshold (high chance of exploitation in the next 30 days)
+//         intel-incomplete = OSV details or EPSS could not be fetched: needs manual review, never silently "known"
 //         known     = any other OSV advisory for that exact version
 export const HOUR = 3600_000;
 
 export function assess(components, osvMap, details, kevMap, epssMap, { epssThreshold = 0.1 } = {}) {
   const findings = [];
+  const epssFailed = epssMap && epssMap.failed;
   for (const c of components) {
     for (const id of osvMap.get(c.purl) || []) {
       const d = details.get(id) || { id, cves: [], aliases: [], fixed: [], refs: [] };
       const kevHits = d.cves.filter((x) => kevMap.has(x));
       const ep = d.cves.map((x) => epssMap.get(x)).filter(Boolean).sort((a, b) => b.epss - a.epss)[0] || null;
-      const tier = kevHits.length ? 'exploited' : ep && ep.epss >= epssThreshold ? 'likely' : 'known';
+      const missing = [];
+      if (d.incomplete) missing.push('OSV details');
+      if (epssFailed && d.cves.some((x) => epssFailed.has(x))) missing.push('EPSS');
+      const tier = kevHits.length ? 'exploited' : ep && ep.epss >= epssThreshold ? 'likely' : missing.length ? 'intel-incomplete' : 'known';
       findings.push({
         fingerprint: `${c.purl}|${id}`, tier, component: c, vuln: d, kev: kevHits.map((x) => ({ cve: x, ...kevMap.get(x) })), epss: ep,
+        ...(missing.length ? { missing } : {}),
       });
     }
   }
-  const order = { exploited: 0, likely: 1, known: 2 };
+  const order = { exploited: 0, likely: 1, 'intel-incomplete': 2, known: 3 };
   findings.sort((a, b) => order[a.tier] - order[b.tier] || (b.epss?.epss || 0) - (a.epss?.epss || 0));
   // OSV publishes one CVE under several ids (GHSA, PYSEC, GO, RUSTSEC): keep one finding per component and CVE,
   // the most severe tier first (the sort above), and remember the other ids as aliases.

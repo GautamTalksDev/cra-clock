@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy: CRA Clock</title>
+<meta name="description" content="CRA Clock's website sets no cookies and runs no analytics. What the in-browser scanner sends, and to whom.">
+<link rel="canonical" href="https://craclock.gautamkhosla.com/privacy/">
+<meta name="theme-color" content="#0a0505">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="face"/><path d="M12 12 V6" class="hand h1"/><path d="M12 12 L16 14" class="hand h2"/></svg>CRA CLOCK</a>
+  <nav aria-label="Main"><a href="/#scan">Scanner</a><a href="/#install">Install</a><a href="https://github.com/GautamTalksDev/cra-clock">GitHub</a><a class="cta-s" href="https://github.com/marketplace/actions/cra-clock">Get it on GitHub Marketplace</a></nav>
+</header>
+<main>
+  <section class="page">
+    <h1>Privacy</h1>
+    <p>This website sets no cookies, runs no analytics and loads nothing from third parties except the two vulnerability APIs below, and only when you run the scanner.</p>
+    <h2>The in-browser scanner</h2>
+    <ul>
+      <li>The lockfile you drop is read and parsed in your browser. It is never uploaded.</li>
+      <li>Package names and versions (as package URLs, for example <code>pkg:npm/lodash@4.17.20</code>) are sent to <a href="https://osv.dev">OSV.dev</a>, run by Google, to find advisories for those exact versions.</li>
+      <li>CVE ids from those advisories are sent to <a href="https://www.first.org/epss/">FIRST's EPSS API</a> to get exploitation probabilities.</li>
+      <li>Those services receive your IP address and browser details like any web request, under their own privacy policies.</li>
+    </ul>
+    <h2>The KEV mirror</h2>
+    <p>The page reads <code>/kev.json</code> from this site. That is a copy of the CVE ids in CISA's Known Exploited Vulnerabilities catalog, fetched by our server (a Cloudflare Worker) and cached for up to six hours, because cisa.gov does not allow browsers to fetch it directly. Nothing about your scan is sent to it.</p>
+    <h2>Hosting</h2>
+    <p>The site is served by Cloudflare, which processes standard request data (such as IP addresses) to deliver and protect it. The site's own code adds no logging or tracking.</p>
+    <h2>The GitHub Action</h2>
+    <p>The Action runs in your own CI. It sends package URLs to OSV.dev, CVE ids to FIRST EPSS, and downloads the CISA KEV catalog. Your source code and lockfile contents are not sent anywhere, and nothing is sent to us.</p>
+    <h2>Contact</h2>
+    <p><a href="mailto:security@gautamkhosla.com">security@gautamkhosla.com</a></p>
+  </section>
+</main>
+<footer class="foot">
+  <nav aria-label="Footer"><a href="https://github.com/GautamTalksDev/cra-clock#readme">Docs</a><a href="https://github.com/GautamTalksDev/cra-clock">GitHub</a><a href="mailto:security@gautamkhosla.com">Security</a><a href="https://github.com/GautamTalksDev/cra-clock/blob/main/LICENSE">License</a><a href="/privacy/">Privacy</a></nav>
+  <p>CRA Clock, by Gautam Khosla. Not affiliated with the European Commission, ENISA or CISA.</p>
+</footer>
+</body>
+</html>

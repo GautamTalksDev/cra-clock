@@ -16,18 +16,24 @@ something you ship is actively exploited it opens an issue with the Article 14 d
 
 ## Why
 
-Since **11 September 2026**, manufacturers of products with digital elements sold in the EU must report every **actively
-exploited vulnerability** through the ENISA Single Reporting Platform:
+From **11 September 2026**, Article 14 of the EU Cyber Resilience Act requires manufacturers of products with digital
+elements made available in the EU to report **actively exploited vulnerabilities** (and severe incidents) through the
+single reporting platform set up under the CRA. For an actively exploited vulnerability:
 
 | When | What |
 |---|---|
 | **24 hours** after becoming aware | Early warning: exploited, which product, which Member States |
 | **72 hours** | Notification: severity, corrective and mitigating measures |
-| **14 days** after a fix is available | Final report |
+| **14 days** after a corrective or mitigating measure is available | Final report |
 
-This applies to products already on the market, and the full CRA obligations (including SBOMs) follow in December 2027.
-Large vendors have PSIRTs. Most small software and IoT companies find out a dependency is being exploited from a customer,
-long after the 24 hours started. ([STAR](https://star.global/posts/cyber-resilience-act-article-14-reporting-requirements/), [HackerOne](https://www.hackerone.com/blog/eu-cra-reporting-requirements))
+This applies to products already on the market; the rest of the CRA (including the SBOM obligation) applies from
+11 December 2027. Large vendors have PSIRTs. Small software and IoT companies often find out a dependency is being
+exploited from a customer, long after the 24 hours started. CRA Clock covers actively exploited vulnerabilities in your
+dependencies; severe incidents are outside its scope.
+
+Primary sources: [Regulation (EU) 2024/2847 on EUR-Lex](https://eur-lex.europa.eu/eli/reg/2024/2847/oj) (Article 14,
+reporting; Article 71, dates of application) and the European Commission's
+[CRA reporting obligations page](https://digital-strategy.ec.europa.eu/en/policies/cra-reporting).
 
 ## Install
 
@@ -43,12 +49,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with: { persist-credentials: false }
       - uses: GautamTalksDev/cra-clock@v1
         with:
           product-name: Acme Router
+          open-issues: ${{ github.event_name != 'pull_request' }}
       - uses: actions/upload-artifact@v4
         with: { name: cra-clock, path: cra-clock/ }
 ```
+
+**Pin by commit SHA (recommended).** Tags can move; a full commit SHA cannot. Pin a release's SHA and let Dependabot
+update it:
+
+```yaml
+      - uses: GautamTalksDev/cra-clock@<full-40-character-commit-sha> # v1.0.0
+```
+
+**Pull requests from forks.** GitHub gives fork pull requests a read-only token, so issues cannot be opened. If issue
+creation returns 403, CRA Clock falls back to the job summary with a note instead of failing. Set `open-issues: false`
+for `pull_request` events (as above) and let the push and schedule runs open the issues.
 
 ## What it does
 
@@ -72,6 +91,9 @@ flowchart LR
 - **The clock never resets**: the first detection time is stored in the issue, so re-runs update the countdown instead of
   restarting it. Close the issue when the final report is filed.
 - **De-duplicated**: one finding per component and CVE, however many advisory ids describe it.
+- **Never silently clean**: if OSV advisory details or EPSS scores cannot be fetched, the advisory is marked
+  `intel-incomplete`, listed in the job summary for manual review, and the job fails unless `allow-incomplete-intel: true`.
+- **Symlinks are never followed**: symlinked files and directories in the repo are skipped.
 
 ## Outputs
 
@@ -82,7 +104,7 @@ flowchart LR
 | `cra-clock/report.md` | The job summary (also written to the GitHub step summary) |
 | Issues labelled `cra-clock` | One per actively exploited vulnerability, with deadlines and drafts |
 
-Step outputs: `components`, `exploited`, `likely`, `sbom`, `vex`.
+Step outputs: `components`, `exploited`, `likely`, `intel-incomplete`, `sbom`, `vex`.
 
 ## Inputs
 
@@ -90,15 +112,20 @@ Step outputs: `components`, `exploited`, `likely`, `sbom`, `vex`.
 |---|---|---|
 | `product-name` | repo name | Used in reports and drafts |
 | `product-version` | ref name | Recorded in the SBOM |
-| `open-issues` | `true` | Open and update Article 14 issues |
-| `fail-on` | `exploited` | `exploited`, `likely`, or `never` |
-| `epss-threshold` | `0.1` | EPSS at or above this is "likely" |
+| `open-issues` | `true` | `true` or `false`. Open and update Article 14 issues. Use `false` on `pull_request` |
+| `fail-on` | `exploited` | `exploited`, `likely`, or `never`. Anything else is an error |
+| `epss-threshold` | `0.1` | A number from 0 to 1; EPSS at or above this is "likely". `0` is allowed. Anything else is an error |
+| `allow-incomplete-intel` | `false` | `true` lets the job pass when some advisories could not be fully checked (they are still listed) |
 | `output-dir` | `cra-clock` | Where files are written |
+
+Exit codes: `0` clean, `1` a `fail-on` condition or incomplete intelligence, `2` invalid input or an outage
+(for example, the CISA KEV catalog could not be downloaded).
 
 ## Try it without installing
 
-The website scans a lockfile in your browser with the same parsers and tiers. Click "Try a vulnerable demo project" to see a
-Java service still shipping Log4Shell and Spring4Shell light up.
+The [website](https://craclock.gautamkhosla.com) scans a lockfile in your browser with the same parsers and tiers. The
+lockfile never leaves your browser: only package names and versions are sent to OSV.dev, and only CVE ids to FIRST.
+Click "Try a vulnerable demo project" to see a Java service still shipping Log4Shell (disclosed December 2021) light up.
 
 ## Develop
 
@@ -109,7 +136,7 @@ node site/dev.mjs 8792          # the website, with a live KEV mirror
 
 ## Not legal advice
 
-CRA Clock prepares drafts and evidence; it does not submit anything to ENISA. Check whether your product is in scope.
+CRA Clock prepares drafts and evidence; it does not submit anything for you. Check whether your product is in scope.
 CISA KEV is one reliable source of exploitation evidence; if you learn of exploitation another way, the clock started then.
 
 ## License

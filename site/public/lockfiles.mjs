@@ -147,6 +147,29 @@ export const PARSERS = {
   'Cargo.lock': cargoLock, 'Gemfile.lock': gemfileLock, 'composer.lock': composerLock, 'gradle.lockfile': gradleLock,
 };
 
+/** guess the lockfile format from its content, for renamed files (e.g. "package-lock (1).json"); null if unknown */
+export function sniff(text) {
+  const t = String(text || '').slice(0, 200_000);
+  const head = t.trimStart();
+  if (head.startsWith('{')) {
+    let j; try { j = JSON.parse(t); } catch { return null; }
+    if (j && typeof j === 'object') {
+      if ('lockfileVersion' in j) return 'package-lock.json';
+      if (j._meta && (j.default || j.develop)) return 'Pipfile.lock';
+      if (Array.isArray(j.packages) && ('content-hash' in j || '_readme' in j)) return 'composer.lock';
+    }
+    return null;
+  }
+  if (/^lockfileVersion:/m.test(t) && /^(packages|importers|snapshots):/m.test(t)) return 'pnpm-lock.yaml';
+  if (/^# yarn lockfile v1/m.test(t) || /^__metadata:/m.test(t)) return 'yarn.lock';
+  if (/^module\s+\S+/m.test(t) && /^go\s+\d/m.test(t)) return 'go.mod';
+  if (/^GEM\r?\n\s+remote:/m.test(t) && /^ {2}specs:/m.test(t)) return 'Gemfile.lock';
+  if (/^\[\[package\]\]/m.test(t)) return /^python-versions\s*=/m.test(t) ? 'poetry.lock' : 'Cargo.lock';
+  if (/^# This is a Gradle generated file/m.test(t) || /^[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+:[A-Za-z0-9_.+-]+=\S/m.test(t)) return 'gradle.lockfile';
+  if (/^[A-Za-z0-9][A-Za-z0-9._-]*(\[[^\]]*\])?\s*==\s*\S+/m.test(t)) return 'requirements.txt';
+  return null;
+}
+
 export function parseFile(basename, text, path = basename) {
   const p = PARSERS[basename];
   if (!p) return [];
