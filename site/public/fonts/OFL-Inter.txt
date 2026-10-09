@@ -1,0 +1,4 @@
+Inter (inter.woff2): Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+The full license text is in OFL-Geist.txt in this folder (identical license terms).

@@ -14,60 +14,85 @@
 <meta property="og:image" content="https://craclock.gautamkhosla.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="CRA Clock: a red 24:00:00 countdown and the words: the clock starts the moment you know.">
+<meta property="og:image:alt" content="CRA Clock: a station clock and the words: the clock starts the moment you know.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CRA Clock: 24 hours starts the moment you know">
 <meta name="twitter:description" content="Free GitHub Action: SBOM, exploited vulnerability detection and the EU CRA Article 14 reporting clock.">
 <meta name="twitter:image" content="https://craclock.gautamkhosla.com/og.png">
-<meta name="twitter:image:alt" content="CRA Clock: a red 24:00:00 countdown and the words: the clock starts the moment you know.">
-<meta name="theme-color" content="#0a0505">
-<link rel="preload" href="/fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#f3f3f1">
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/site.css">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body>
-<div class="grain" aria-hidden="true"></div>
+<canvas id="hall" aria-hidden="true"></canvas>
 <header class="top">
-  <a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" class="face"/><path d="M12 12 V6" class="hand h1"/><path d="M12 12 L16 14" class="hand h2"/></svg>CRA CLOCK</a>
-  <nav aria-label="Main"><a href="#how">How it works</a><a href="#scan">Scanner</a><a href="#install">Install</a><a href="https://github.com/GautamTalksDev/cra-clock#readme">Docs</a><a class="gh" href="https://github.com/GautamTalksDev/cra-clock"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a><a class="cta-s" href="https://github.com/marketplace/actions/cra-clock">Get it on GitHub Marketplace</a></nav>
+  <a class="brand" href="/"><span class="mark" aria-hidden="true"><i></i></span>CRA Clock</a>
+  <nav aria-label="Main"><a href="#departures">Deadlines</a><a href="#arrivals">Live board</a><a href="#scan">Scanner</a><a href="#install">Install</a><a class="pill" href="#install">Add the Action</a></nav>
 </header>
 
 <main>
   <section class="hero">
-    <p class="eyebrow"><span class="rec"></span>EU Cyber Resilience Act, Article 14. Reporting obligations apply from 11 September 2026.</p>
-    <figure class="hero-clock">
-      <figcaption class="clock-label"><span class="demo-tag">Demo clock</span>Your 24 hours start the moment you learn a vulnerability is exploited</figcaption>
-      <div class="clock" id="clock" role="timer" aria-label="Demo countdown from 24 hours">24:00:00</div>
-    </figure>
-    <h1 class="h1">The clock starts the moment you <em>know.</em></h1>
-    <p class="sub">If you make software or a connected product sold in the EU and one of its components is being actively exploited, you have <b>24 hours</b> to send an early warning, <b>72 hours</b> to notify, and <b>14 days</b> after a fix is available to file the final report. Teams often find out from a customer. CRA Clock watches every dependency so you can find out first.</p>
-    <div class="ctas">
-      <a class="btn-x pri" href="#install">Add the Action</a>
-      <a class="btn-x" href="#scan">Scan a lockfile in your browser</a>
+    <div class="hero-copy">
+      <p class="kicker"><span class="dot"></span>EU Cyber Resilience Act . Article 14 . Applies from 11 September 2026</p>
+      <h1>The clock starts the moment you <span class="r">know.</span></h1>
+      <p class="sub">If you make software or a connected product sold in the EU and one of its components is being actively exploited, you have <b>24 hours</b> to send an early warning, <b>72 hours</b> to notify, and <b>14 days</b> after a fix is available to file the final report. CRA Clock watches every dependency so you find out first.</p>
+      <div class="ctas"><a class="btn solid" href="#install">Add the Action</a><a class="btn ghost" href="#scan">Scan a lockfile</a></div>
+      <p class="fineline">Free and open source, Apache-2.0. A GitHub Action that runs in your own CI.</p>
     </div>
-    <p class="hero-links"><a href="https://github.com/GautamTalksDev/cra-clock">View the source on GitHub</a><span aria-hidden="true">/</span><a href="https://github.com/marketplace/actions/cra-clock">on GitHub Marketplace</a><span aria-hidden="true">/</span><span>Free, Apache-2.0</span></p>
+    <figure class="station">
+      <div class="clockwrap">
+        <img id="face" src="/img/clock_face.webp" width="1600" height="1600" alt="" fetchpriority="high">
+        <svg id="hands" viewBox="0 0 1600 1600" role="img" aria-label="Station clock showing your local time">
+          <g id="hHour"><path d="M786 820 L790 520 Q800 500 810 520 L814 820 Z"/></g>
+          <g id="hMin"><path d="M790 840 L793 330 Q800 312 807 330 L810 840 Z"/></g>
+          <g id="hSec"><rect x="797" y="318" width="6" height="610" rx="3"/><circle cx="800" cy="800" r="16"/><circle cx="800" cy="800" r="5" class="pin"/></g>
+        </svg>
+      </div>
+      <figcaption class="board mini" aria-live="off">
+        <span class="lbl">Demo . early warning due in</span>
+        <span class="flaps" id="clock" role="timer" aria-label="Demo countdown from 24 hours">24:00:00</span>
+      </figcaption>
+    </figure>
   </section>
 
-  <section class="timeline" aria-label="Article 14 deadlines for an actively exploited vulnerability">
-    <div class="tl"><b>0h</b><span>A dependency you ship lands in CISA's Known Exploited Vulnerabilities catalog.</span><i>CRA Clock opens an issue. The clock is running.</i></div>
-    <div class="tl hot"><b>24h</b><span>Early warning: actively exploited, which product, which Member States.</span><i>Draft is in the issue, pre-filled.</i></div>
-    <div class="tl"><b>72h</b><span>Vulnerability notification: severity, corrective and mitigating measures.</span><i>Draft is in the issue, pre-filled.</i></div>
-    <div class="tl"><b>+14d</b><span>Final report, within 14 days after a corrective or mitigating measure is available.</span><i>VEX file tracks the state for you.</i></div>
+  <section class="departures" id="departures" aria-label="Article 14 deadlines for an actively exploited vulnerability">
+    <div class="sec-head"><p class="kicker"><span class="dot"></span>Departures</p><h2>Three deadlines. <span class="r">None of them wait.</span></h2></div>
+    <div class="board big" id="depBoard">
+      <div class="b-row b-head"><span>Time</span><span>Departure</span><span>What it carries</span><span>CRA Clock</span></div>
+      <div class="b-row"><span class="t" data-flap="0H">0H</span><span class="d" data-flap="CLOCK STARTS">CLOCK STARTS</span><span class="x">A dependency you ship lands in CISA's Known Exploited Vulnerabilities catalog.</span><span class="s">Opens an issue</span></div>
+      <div class="b-row hot"><span class="t" data-flap="24H">24H</span><span class="d" data-flap="EARLY WARNING">EARLY WARNING</span><span class="x">Actively exploited, which product, which Member States.</span><span class="s">Draft pre-filled</span></div>
+      <div class="b-row"><span class="t" data-flap="72H">72H</span><span class="d" data-flap="NOTIFICATION">NOTIFICATION</span><span class="x">Severity, corrective and mitigating measures.</span><span class="s">Draft pre-filled</span></div>
+      <div class="b-row"><span class="t" data-flap="+14D">+14D</span><span class="d" data-flap="FINAL REPORT">FINAL REPORT</span><span class="x">Within 14 days after a corrective or mitigating measure is available.</span><span class="s">VEX tracks state</span></div>
+    </div>
+    <p class="note">Article 14 also covers severe incidents; CRA Clock handles actively exploited vulnerabilities in your dependencies.</p>
+  </section>
+
+  <section class="arrivals" id="arrivals">
+    <div class="sec-head"><p class="kicker"><span class="dot live"></span>Live board</p><h2>Just arrived in the <span class="r">exploited</span> catalog.</h2>
+      <p class="lead">The newest entries in CISA's Known Exploited Vulnerabilities catalog, read live through this site and cached for up to six hours. If one of these is in something you ship to the EU, your clock may already be running.</p></div>
+    <div class="board big live" id="kevBoard" aria-live="polite">
+      <div class="b-row b-head"><span>Added</span><span>CVE</span><span>Vendor and product</span><span>Ransomware</span></div>
+      <div class="b-msg" id="kevMsg">Reading the catalog...</div>
+    </div>
+    <p class="note" id="kevMeta">Source: CISA KEV catalog. CRA Clock does not add, rank or interpret these entries.</p>
   </section>
 
   <section class="scan" id="scan">
     <div class="s-copy">
-      <p class="eyebrow">Runs in your browser</p>
-      <h2 class="big">Would your clock be<br><em>running right now?</em></h2>
+      <p class="kicker"><span class="dot"></span>Runs in your browser</p>
+      <h2>Would your clock be <span class="r">running right now?</span></h2>
       <p>Drop any of the 12 lockfile formats CRA Clock reads: <code>package-lock.json</code>, <code>npm-shrinkwrap.json</code>, <code>yarn.lock</code>, <code>pnpm-lock.yaml</code>, <code>requirements.txt</code>, <code>poetry.lock</code>, <code>Pipfile.lock</code>, <code>go.mod</code>, <code>Cargo.lock</code>, <code>Gemfile.lock</code>, <code>composer.lock</code> or <code>gradle.lockfile</code>. Renamed files are recognised by their content.</p>
       <p class="privacy-note"><b>Your lockfile never leaves your browser.</b> Only package names and versions are sent to OSV.dev, and only CVE ids to FIRST. <a href="/privacy/">Privacy</a></p>
     </div>
-    <label class="drop" id="drop" for="file">
-      <input type="file" id="file" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true" class="drop-ico"><path d="M12 16V4m0 0l-5 5m5-5l5 5M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
-      <b>Drop a lockfile here</b><span>or click to choose one</span>
-      <button type="button" class="btn-x" id="demo">Try a vulnerable demo project</button>
-    </label>
+    <div class="s-tool">
+      <label class="drop" id="drop" for="file">
+        <input type="file" id="file" hidden>
+        <span class="ticket" aria-hidden="true"><i></i></span>
+        <b>Drop a lockfile here</b><span>or click to choose one</span>
+        <button type="button" class="btn ghost sm" id="demo">Try a vulnerable demo project</button>
+      </label>
+    </div>
     <div class="result" id="result" hidden>
       <div class="r-head"><div><b id="rTitle"></b><span id="rSub"></span></div><div class="r-clock" id="rClock"></div></div>
       <div class="r-stats" id="rStats" hidden></div>
@@ -78,21 +103,20 @@
   </section>
 
   <section class="how" id="how">
-    <h2 class="big center">One Action. Every push. With this workflow, every six hours.</h2>
-    <div class="cards">
-      <article><span class="n">SBOM</span><h3>Knows what you ship</h3><p>Reads 12 lockfile formats across npm, PyPI, Maven (Gradle), Go, Cargo, RubyGems and Packagist, and writes a CycloneDX 1.6 SBOM, a machine-readable SBOM format the CRA accepts.</p></article>
-      <article><span class="n">Exploited, not just vulnerable</span><h3>Signal, not noise</h3><p>Every component is checked against OSV, then against CISA's Known Exploited Vulnerabilities catalog and FIRST's EPSS. Only evidence of exploitation starts the clock; high EPSS gets a warning. If a lookup fails, the advisory is flagged for manual review, never quietly passed.</p></article>
-      <article><span class="n">Article 14</span><h3>The clock and the paperwork</h3><p>One issue per actively exploited vulnerability with the 24h and 72h deadlines, the fix version, and pre-filled early warning and notification drafts. The clock never resets on re-runs.</p></article>
-      <article><span class="n">VEX</span><h3>A record of triage</h3><p>A CycloneDX VEX file marks each vulnerability in triage, with KEV and EPSS evidence attached, ready to share with customers and authorities.</p></article>
+    <div class="sec-head"><p class="kicker"><span class="dot"></span>How it works</p><h2>One Action. Every push.<br>Every six hours.</h2></div>
+    <div class="platforms">
+      <article><span class="pf">1</span><p class="pk">SBOM</p><h3>Knows what you ship</h3><p>Reads 12 lockfile formats across npm, PyPI, Maven (Gradle), Go, Cargo, RubyGems and Packagist, and writes a CycloneDX 1.6 SBOM, a machine-readable SBOM format the CRA accepts.</p></article>
+      <article><span class="pf">2</span><p class="pk">Exploited, not just vulnerable</p><h3>Signal, not noise</h3><p>Every component is checked against OSV, then CISA's KEV catalog and FIRST's EPSS. Only evidence of exploitation starts the clock; high EPSS gets a warning. A failed lookup is flagged for manual review, never quietly passed.</p></article>
+      <article><span class="pf">3</span><p class="pk">Article 14</p><h3>The clock and the paperwork</h3><p>One issue per actively exploited vulnerability with the 24h and 72h deadlines, the fix version, and pre-filled early warning and notification drafts. The clock never resets on re-runs.</p></article>
+      <article><span class="pf">4</span><p class="pk">VEX</p><h3>A record of triage</h3><p>A CycloneDX VEX file marks each vulnerability in triage, with KEV and EPSS evidence attached, ready to share with customers and authorities.</p></article>
     </div>
   </section>
 
   <section class="outputs" id="outputs">
-    <p class="eyebrow center-eyebrow">What lands in your repo</p>
-    <h2 class="big center">An issue with the clock. <em>An SBOM you can hand over.</em></h2>
+    <div class="sec-head c"><p class="kicker"><span class="dot"></span>What lands in your repo</p><h2>An issue with the clock.<br><span class="r">An SBOM you can hand over.</span></h2></div>
     <div class="mocks">
       <figure class="mock issue" aria-label="Example of the GitHub issue CRA Clock opens">
-        <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="mock-path">acme/router / Issues / #128</span></div>
+        <div class="mock-bar"><span class="dot3"></span><span class="dot3"></span><span class="dot3"></span><span class="mock-path">acme/router / Issues / #128</span></div>
         <div class="issue-body">
           <p class="issue-title">CRA Art. 14: actively exploited CVE-2021-44228 in org.apache.logging.log4j:log4j-core 2.14.1</p>
           <p class="issue-meta"><span class="state">Open</span><span class="lbl red">cra-clock</span><span class="lbl">security</span><span class="by">opened by github-actions</span></p>
@@ -104,13 +128,13 @@
           </table>
           <p class="issue-h">CRA Article 14 clock</p>
           <ul class="issue-clock"><li><b>Early warning</b><span>due in 21h 14m</span></li><li><b>Vulnerability notification</b><span>due in 69h 14m</span></li><li><b>Final report</b><span>14 days after a fix is available</span></li></ul>
-          <p class="issue-draft">&#9656; Draft: 24 hour early warning</p>
-          <p class="issue-draft">&#9656; Draft: 72 hour notification</p>
+          <p class="issue-draft">Draft: 24 hour early warning</p>
+          <p class="issue-draft">Draft: 72 hour notification</p>
         </div>
         <figcaption>Illustration of an issue CRA Clock opens. Figures shown are examples.</figcaption>
       </figure>
       <figure class="mock sbom" aria-label="Example of the CycloneDX SBOM CRA Clock writes">
-        <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="mock-path">cra-clock/sbom.cdx.json</span></div>
+        <div class="mock-bar"><span class="dot3"></span><span class="dot3"></span><span class="dot3"></span><span class="mock-path">cra-clock/sbom.cdx.json</span></div>
 <pre class="json"><span class="p">{</span>
   <span class="k">"bomFormat"</span>: <span class="s">"CycloneDX"</span>,
   <span class="k">"specVersion"</span>: <span class="s">"1.6"</span>,
@@ -131,10 +155,10 @@
   </section>
 
   <section class="install" id="install">
-    <h2 class="big center">Ninety seconds to install</h2>
-    <p class="center lead">Add this workflow. It runs on every push to main and every six hours, because the KEV catalog changes daily.</p>
-    <pre class="code"><span class="c"># .github/workflows/cra-clock.yml</span>
-<span class="k">name:</span> cra-clock
+    <div class="sec-head c"><p class="kicker"><span class="dot"></span>Install</p><h2>Ninety seconds to install.</h2><p class="lead">Add this workflow. It runs on every push to main and every six hours, because the KEV catalog changes daily.</p></div>
+    <div class="window">
+      <p class="w-bar"><span></span><span></span><span></span><b>.github/workflows/cra-clock.yml</b></p>
+      <pre class="code"><span class="k">name:</span> cra-clock
 <span class="k">on:</span>
   <span class="k">push:</span> { <span class="k">branches:</span> [main] }
   <span class="k">schedule:</span> [{ <span class="k">cron:</span> <span class="s">'17 */6 * * *'</span> }]
@@ -147,19 +171,20 @@
         <span class="k">with:</span> { <span class="k">persist-credentials:</span> <span class="s">false</span> }
       - <span class="k">uses:</span> GautamTalksDev/cra-clock@v1
         <span class="k">with:</span> { <span class="k">product-name:</span> <span class="s">Acme Router</span> }</pre>
+    </div>
     <div class="install-notes">
       <div><h3>Pin by commit SHA</h3><p>For the strongest supply chain guarantee, pin the full commit SHA of a release instead of the tag, and let Dependabot bump it:</p><pre class="code sm">- <span class="k">uses:</span> GautamTalksDev/cra-clock@&lt;full-40-character-commit-sha&gt; <span class="c"># v1.0.0</span></pre></div>
       <div><h3>Pull requests from forks</h3><p>Fork pull requests get a read-only token, so issues cannot be opened. CRA Clock then falls back to the job summary with a note. To keep runs clean, set <code>open-issues: false</code> on <code>pull_request</code> events.</p><pre class="code sm">- <span class="k">uses:</span> GautamTalksDev/cra-clock@v1
   <span class="k">with:</span>
     <span class="k">open-issues:</span> <span class="s">${{ github.event_name != 'pull_request' }}</span></pre></div>
     </div>
-    <p class="center"><a class="btn-x" href="https://github.com/GautamTalksDev/cra-clock#readme">Read the docs</a></p>
   </section>
 
   <section class="free" id="pricing">
-    <h2 class="big center">Free and open source</h2>
-    <p class="center lead">Free and open source (Apache-2.0). A hosted dashboard may come later.</p>
-    <p class="center"><a class="btn-x pri" href="https://github.com/GautamTalksDev/cra-clock">Star it on GitHub</a></p>
+    <div class="ticket-card">
+      <div><p class="kicker"><span class="dot"></span>Fare</p><b class="fare">Free</b><p>Free and open source (Apache-2.0). A hosted dashboard may come later.</p></div>
+      <div class="ticket-side"><a class="btn solid" href="#install">Add the Action</a><a class="btn ghost" href="https://github.com/GautamTalksDev/cra-clock#readme">Read the docs</a></div>
+    </div>
   </section>
 
   <section class="sources" id="sources">
@@ -169,15 +194,13 @@
       <li><a href="https://digital-strategy.ec.europa.eu/en/policies/cra-reporting">European Commission: CRA reporting obligations</a></li>
       <li><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog">CISA Known Exploited Vulnerabilities catalog</a>, <a href="https://osv.dev">OSV.dev</a>, <a href="https://www.first.org/epss/">FIRST EPSS</a></li>
     </ul>
-  </section>
-
-  <section class="fine">
-    <p>CRA Clock prepares drafts and evidence. It is not legal advice and does not submit anything for you. Article 14 applies to manufacturers of products with digital elements made available on the EU market, and covers both actively exploited vulnerabilities and severe incidents; CRA Clock handles actively exploited vulnerabilities in your dependencies. Check whether your product is in scope. Exploitation evidence comes from the CISA KEV catalog, which is one reliable source among several; if you learn of exploitation another way, your clock started then.</p>
+    <p class="fine">CRA Clock prepares drafts and evidence. It is not legal advice and does not submit anything for you. Article 14 applies to manufacturers of products with digital elements made available on the EU market, and covers both actively exploited vulnerabilities and severe incidents; CRA Clock handles actively exploited vulnerabilities in your dependencies. Check whether your product is in scope. Exploitation evidence comes from the CISA KEV catalog, which is one reliable source among several; if you learn of exploitation another way, your clock started then.</p>
   </section>
 </main>
 <footer class="foot">
-  <nav aria-label="Footer"><a href="https://github.com/GautamTalksDev/cra-clock#readme">Docs</a><a href="https://github.com/GautamTalksDev/cra-clock">GitHub</a><a href="mailto:security@gautamkhosla.com">Security</a><a href="https://github.com/GautamTalksDev/cra-clock/blob/main/LICENSE">License</a><a href="/privacy/">Privacy</a></nav>
-  <p>CRA Clock, by Gautam Khosla. Data: OSV.dev, CISA KEV, FIRST EPSS. Not affiliated with the European Commission, ENISA or CISA.</p>
+  <div class="f-row"><a class="brand" href="/"><span class="mark" aria-hidden="true"><i></i></span>CRA Clock</a>
+  <nav aria-label="Footer"><a href="https://github.com/GautamTalksDev/cra-clock#readme">Docs</a><a href="https://github.com/GautamTalksDev/cra-clock">GitHub</a><a href="mailto:security@gautamkhosla.com">Security</a><a href="https://github.com/GautamTalksDev/cra-clock/blob/main/LICENSE">License</a><a href="/privacy/">Privacy</a></nav></div>
+  <p>CRA Clock, by Gautam Khosla. Data: OSV.dev, CISA KEV, FIRST EPSS. Not affiliated with the European Commission, ENISA or CISA. The station clock shows your device's local time.</p>
 </footer>
 <script src="/landing.js" type="module"></script>
 </body>
