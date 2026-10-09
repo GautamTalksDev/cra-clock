@@ -31,7 +31,8 @@ coordinating CSIRT and ENISA. Check the Commission's reporting page below for th
 
 - Decide whether your product is in scope.
 - Submit to ENISA.
-- Know when you first became aware through other channels (the issue says so).
+- Know when you first became aware through other channels. The issue draft says "Detected by CRA Clock" with the time of
+  detection, and notes that your 24 hours run from when you became aware: edit the time if you knew earlier.
 
 Primary sources: [Regulation (EU) 2024/2847 on EUR-Lex](https://eur-lex.europa.eu/eli/reg/2024/2847/oj) (Article 14,
 reporting obligations; Article 71, entry into force and application) and the European Commission's

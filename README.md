@@ -92,11 +92,16 @@ flowchart LR
   `poetry.lock`, `Pipfile.lock`, `go.mod`, `Cargo.lock`, `Gemfile.lock`, `composer.lock`, `gradle.lockfile`.
 - **Signal, not noise**: only CISA KEV evidence (reliable evidence of exploitation in the wild) starts the clock. High EPSS
   is a warning. Everything else is counted in the report and listed in the VEX.
-- **The clock never resets**: the first detection time is stored in the issue, so re-runs update the countdown instead of
-  restarting it. Close the issue when the final report is filed.
+- **The clock never resets**: the time CRA Clock first detected the KEV listing is stored in the issue, keyed by component
+  and CVE (not by the order OSV lists its advisory ids in), so re-runs update the countdown instead of restarting it.
+  Close the issue when the final report is filed. That time is when CRA Clock detected the listing: your legal 24 hours run
+  from when you became aware, so the early warning draft says "Detected by CRA Clock" and asks you to edit the time if you
+  knew earlier. Only issues opened by a bot (the workflow token) or by the token's own account are believed.
 - **De-duplicated**: one finding per component and CVE, however many advisory ids describe it.
 - **Never silently clean**: if OSV advisory details or EPSS scores cannot be fetched, the advisory is marked
   `intel-incomplete`, listed in the job summary for manual review, and the job fails unless `allow-incomplete-intel: true`.
+  If the CISA KEV catalog cannot be read, or comes back empty, the report says "Could not confirm exploitation status"
+  (never "no actively exploited vulnerabilities") and the job exits 2.
 - **Symlinks are never followed**: symlinked files and directories in the repo are skipped.
 
 ## Outputs
@@ -108,7 +113,8 @@ flowchart LR
 | `cra-clock/report.md` | The job summary (also written to the GitHub step summary) |
 | Issues labelled `cra-clock` | One per actively exploited vulnerability, with deadlines and drafts |
 
-Step outputs: `components`, `exploited`, `likely`, `intel-incomplete`, `sbom`, `vex`.
+Step outputs: `components`, `exploited`, `likely`, `intel-incomplete`, `kev-status`, `sbom`, `vex`. When the KEV catalog
+cannot be read, `exploited` is the word `unknown` (not `0`) and `kev-status` is `unknown`; otherwise `kev-status` is `ok`.
 
 ## Inputs
 
@@ -123,7 +129,8 @@ Step outputs: `components`, `exploited`, `likely`, `intel-incomplete`, `sbom`, `
 | `output-dir` | `cra-clock` | Where files are written |
 
 Exit codes: `0` clean, `1` a `fail-on` condition or incomplete intelligence, `2` invalid input or an outage
-(for example, the CISA KEV catalog could not be downloaded).
+(for example, the CISA KEV catalog could not be downloaded, or came back empty; the SBOM, VEX and a report that says
+"Could not confirm exploitation status" are still written).
 
 ## Try it without installing
 
@@ -134,7 +141,7 @@ Click "Try a vulnerable demo project" to see a Java service still shipping Log4S
 ## Develop
 
 ```bash
-node --test test/*.test.mjs     # parsers for every format, the clock, untrusted-text handling, end to end
+node --test test/*.test.mjs     # parsers for every format, the clock, untrusted-text handling, KEV outages, end to end
 node site/dev.mjs 8792          # the website, with a live KEV mirror
 ```
 
