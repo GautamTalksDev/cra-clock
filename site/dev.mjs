@@ -10,6 +10,7 @@ http.createServer(async (req, res) => {
   const p = new URL(req.url, 'http://x').pathname;
   if (p === '/kev.json') {
     if (!kev) { const j = await (await fetch('https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json')).json(); kev = kevBody(j); }
+    if (!kev) { res.writeHead(502, { 'content-type': 'application/json' }); return res.end('{"cves":[]}'); } // empty or truncated catalog: same as the Worker
     res.writeHead(200, { 'content-type': 'application/json' }); return res.end(kev);
   }
   if (p.includes('..')) { res.writeHead(403); return res.end(); }

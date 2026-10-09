@@ -1,6 +1,7 @@
 // CRA Clock landing: the station clock, split-flap boards (deadlines + live KEV arrivals) and the in-browser lockfile scanner (same parsers and tiers as the Action).
 // No innerHTML anywhere: every node is built with createElement and textContent (the CSP enforces Trusted Types).
-import { PARSERS, parseFile, dedupe, sniff } from '/lockfiles.mjs';
+import { isLockfileName, parseFile, dedupe, sniff } from '/lockfiles.mjs';
+import { kevSet, headline } from '/verdict.mjs';
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, ...kids) => { const n = document.createElement(tag); Object.assign(n, props); for (const k of kids) if (k != null) n.append(k); return n; };
 const link = (href, text, cls) => el('a', { href, textContent: text, target: '_blank', rel: 'noopener noreferrer', ...(cls ? { className: cls } : {}) });
@@ -120,7 +121,7 @@ async function scanFile(f) {
   if (f.size > 20 * 1024 * 1024) return message('That file is too big for the browser scanner. The Action reads lockfiles up to 50 MB.');
   const name = f.name.split(/[\\/]/).pop();
   const text = await f.text();
-  const kind = PARSERS[name] ? name : sniff(text);
+  const kind = isLockfileName(name) ? name : sniff(text);
   if (!kind) return message(`${name} does not look like one of the 12 lockfile formats CRA Clock reads.`);
   scan(kind, text, kind === name ? name : `${name} (read as ${kind})`);
 }
@@ -138,8 +139,8 @@ async function scan(kind, text, label) {
     (res.results || []).forEach((r, i) => (r.vulns || []).forEach((v) => hits.push({ c: checked[i], id: v.id })));
     const shown = hits.slice(0, MAX_ADVISORIES);
     const details = await Promise.all(shown.map((h) => getJson(`https://api.osv.dev/v1/vulns/${encodeURIComponent(h.id)}`).catch(() => ({ id: h.id, failed: true }))));
-    const kev = await getJson('/kev.json').catch(() => ({ cves: null }));
-    const kset = new Set(kev.cves || []);
+    // null when the mirror failed or answered with an empty or truncated catalog: exploitation status is then unknown
+    const kset = kevSet(await getJson('/kev.json').catch(() => null));
     const rows = details.map((d, i) => {
       const cves = [d.id, ...(d.aliases || [])].filter((x) => /^CVE-\d{4}-\d+$/.test(x));
       const fixed = []; for (const a of d.affected || []) for (const r of a.ranges || []) for (const e of r.events || []) if (e.fixed) fixed.push(e.fixed);
@@ -156,8 +157,8 @@ async function scan(kind, text, label) {
     for (const r of rows) {
       const key = r.c.purl + '|' + r.cve; if (seen.has(key)) continue; seen.add(key);
       const e = Math.max(0, ...r.cves.map((x) => ep.get(x) || 0));
-      const kevCve = r.cves.find((x) => kset.has(x)), inKev = !!kevCve;
-      const incomplete = r.failed || r.cves.some((x) => epFailed.has(x)) || !kev.cves;
+      const kevCve = kset ? r.cves.find((x) => kset.has(x)) : undefined, inKev = !!kevCve;
+      const incomplete = r.failed || r.cves.some((x) => epFailed.has(x)) || !kset;
       out.push({ ...r, epss: e, inKev, kevCve, tier: inKev ? 'exploited' : e >= EPSS_LIKELY ? 'likely' : incomplete ? 'review' : 'known' });
     }
     const order = { exploited: 0, likely: 1, review: 2, known: 3 };
@@ -165,9 +166,9 @@ async function scan(kind, text, label) {
     const notes = [];
     if (comps.length > MAX_COMPONENTS) notes.push(`Only the first ${MAX_COMPONENTS} of ${comps.length} components were checked in the browser.`);
     if (hits.length > MAX_ADVISORIES) notes.push(`Only the first ${MAX_ADVISORIES} of ${hits.length} advisories were looked up in the browser.`);
-    if (!kev.cves) notes.push('The KEV mirror could not be reached, so nothing can be confirmed as exploited here.');
+    if (!kset) notes.push('The KEV catalog could not be read here, so exploitation status could not be confirmed.');
     if (notes.length) notes.push('The Action checks everything.');
-    show({ label, comps: comps.length, rows: out, notes });
+    show({ label, comps: comps.length, rows: out, notes, kevKnown: !!kset });
   } catch {
     message('Could not reach OSV.dev from this browser. The Action has no such limit.');
   }
@@ -175,14 +176,14 @@ async function scan(kind, text, label) {
 
 function message(title) { render({ title, sub: '', rows: [] }); }
 
-function show({ label, comps, rows, notes }) {
+function show({ label, comps, rows, notes, kevKnown }) {
   const n = (t) => rows.filter((r) => r.tier === t).length;
   const ex = n('exploited'), li = n('likely'), rv = n('review'), kn = n('known');
-  const title = ex ? `${ex} actively exploited. Your clock would be running.` : rows.length ? 'Nothing actively exploited right now.' : 'No known vulnerabilities.';
-  render({ title, sub: `${label}: ${comps} components, ${rows.length} advisories`, rows, stats: { ex, li, rv, kn }, notes, exploited: ex });
+  const title = headline({ exploited: ex, advisories: rows.length, kevKnown });
+  render({ title, sub: `${label}: ${comps} components, ${rows.length} advisories`, rows, stats: { ex, li, rv, kn }, notes, exploited: kevKnown ? ex : null, kevKnown });
 }
 
-function render({ title, sub, rows, stats, notes = [], exploited = null }) {
+function render({ title, sub, rows, stats, notes = [], exploited = null, kevKnown = true }) {
   $('result').hidden = false;
   $('rTitle').textContent = title;
   $('rSub').textContent = sub;
@@ -194,7 +195,7 @@ function render({ title, sub, rows, stats, notes = [], exploited = null }) {
   const st = $('rStats');
   st.hidden = !stats;
   if (stats) st.replaceChildren(
-    stat(stats.ex, 'Actively exploited', 'exploited'), stat(stats.li, 'Likely soon (EPSS)', 'likely'),
+    stat(kevKnown ? stats.ex : '?', 'Actively exploited', 'exploited'), stat(stats.li, 'Likely soon (EPSS)', 'likely'),
     stat(stats.rv, 'Needs manual review', 'review'), stat(stats.kn, 'Other known advisories', 'known'));
 
   const note = $('rNote');
@@ -203,7 +204,7 @@ function render({ title, sub, rows, stats, notes = [], exploited = null }) {
 
   const nx = $('rNext');
   nx.hidden = !stats;
-  if (stats) nx.replaceChildren(...nextSteps(stats));
+  if (stats) nx.replaceChildren(...nextSteps({ ...stats, kevKnown }));
 
   $('rList').replaceChildren(...rows.slice(0, 200).map((r) => el('div', { className: 'r-row' },
     el('span', { className: 'tag ' + r.tier, textContent: { exploited: 'EXPLOITED', likely: 'LIKELY', review: 'REVIEW', known: 'known' }[r.tier] }),
@@ -218,7 +219,7 @@ function render({ title, sub, rows, stats, notes = [], exploited = null }) {
 
 function stat(v, label, cls) { return el('div', { className: 'stat ' + cls }, el('b', { textContent: String(v) }), el('span', { textContent: label })); }
 
-function nextSteps({ ex, li, rv }) {
+function nextSteps({ ex, li, rv, kevKnown }) {
   const steps = [];
   if (ex) {
     steps.push(el('h3', { textContent: 'What to do next' }));
@@ -231,7 +232,7 @@ function nextSteps({ ex, li, rv }) {
       el('div', { className: 'ctas' }, el('a', { className: 'btn-x pri', href: '#install', textContent: 'Add the Action' }), link(ACTION_URL, 'View on GitHub', 'btn-x'))));
   } else {
     steps.push(el('h3', { textContent: 'What this means' }));
-    steps.push(el('p', { textContent: (li ? `${li} advisor${li === 1 ? 'y has' : 'ies have'} a high chance of exploitation soon. Upgrading those first is a good use of today. ` : '') + (rv ? `${rv} could not be fully checked here; review them by hand. ` : '') + 'The KEV catalog changes daily, so a clean result today can change tomorrow. The Action re-checks every six hours and starts the clock the moment it does.' }));
+    steps.push(el('p', { textContent: (li ? `${li} advisor${li === 1 ? 'y has' : 'ies have'} a high chance of exploitation soon. Upgrading those first is a good use of today. ` : '') + (rv ? `${rv} could not be fully checked here; review them by hand. ` : '') + (kevKnown ? 'The KEV catalog changes daily, so a clean result today can change tomorrow. The Action re-checks every six hours and starts the clock the moment it does.' : 'Nothing here is confirmed clean. Try again in a minute, or add the Action: it reads the CISA catalog directly, and fails the job rather than report clean when it cannot.') }));
     steps.push(el('div', { className: 'ctas' }, el('a', { className: 'btn-x pri', href: '#install', textContent: 'Add the Action' }), link(ACTION_URL, 'View on GitHub', 'btn-x')));
   }
   return steps;

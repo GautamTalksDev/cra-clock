@@ -170,10 +170,12 @@ export function sniff(text) {
   return null;
 }
 
+/** true only for the lockfile names in PARSERS itself; a file called "constructor" or "toString" must not reach Object.prototype */
+export const isLockfileName = (name) => Object.hasOwn(PARSERS, name);
+
 export function parseFile(basename, text, path = basename) {
-  const p = PARSERS[basename];
-  if (!p) return [];
-  try { return p(text, path); } catch { return []; }
+  if (!isLockfileName(basename)) return [];
+  try { return PARSERS[basename](text, path); } catch { return []; }
 }
 
 /** de-duplicate by purl, keeping every file a component appears in */
