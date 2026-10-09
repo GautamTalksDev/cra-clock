@@ -7,6 +7,7 @@ import * as L from '../src/lockfiles.mjs';
 import { assess, clock, fmtRemaining, HOUR } from '../src/assess.mjs';
 import { issueBody, readState, md, vex } from '../src/outputs.mjs';
 import { run, findLockfiles } from '../src/main.mjs';
+import { kevJson } from './kev-fixture.mjs';
 
 test('lockfile parsers: npm v3 and v1, yarn, pnpm, pip, poetry, Pipfile, go, cargo, gem, composer', () => {
   const npm3 = L.npmLock(JSON.stringify({ lockfileVersion: 3, packages: { '': { dependencies: { express: '^4' } }, 'node_modules/express': { version: '4.17.1' }, 'node_modules/@scope/pkg': { version: '1.0.0' }, 'node_modules/express/node_modules/qs': { version: '6.5.2' } } }));
@@ -59,7 +60,7 @@ function fakeIntel({ kevCves = ['CVE-2021-44228'] } = {}) {
     }
     if (url.includes('/vulns/GHSA-jfh8')) return Response.json({ id: 'GHSA-jfh8-c2jp-5v3q', aliases: ['CVE-2021-44228'], summary: 'Log4Shell', affected: [{ ranges: [{ events: [{ introduced: '2.0' }, { fixed: '2.15.0' }] }] }], references: [{ url: 'https://logging.apache.org/log4j/2.x/security.html' }] });
     if (url.includes('/vulns/GHSA-35jh')) return Response.json({ id: 'GHSA-35jh-r3h4-6jhm', aliases: ['CVE-2021-23337'], summary: 'Command injection in lodash' });
-    if (url.includes('known_exploited')) return Response.json({ catalogVersion: '2026.10.06', vulnerabilities: kevCves.map((c) => ({ cveID: c, dateAdded: '2021-12-10', knownRansomwareCampaignUse: 'Known', vulnerabilityName: 'Log4j RCE', requiredAction: 'Apply updates' })) });
+    if (url.includes('known_exploited')) return Response.json(kevJson(kevCves.map((c) => ({ cveID: c, dateAdded: '2021-12-10', knownRansomwareCampaignUse: 'Known', vulnerabilityName: 'Log4j RCE', requiredAction: 'Apply updates' }))));
     if (url.includes('api.first.org')) return Response.json({ data: [{ cve: 'CVE-2021-44228', epss: '0.97', percentile: '0.999' }, { cve: 'CVE-2021-23337', epss: '0.02', percentile: '0.8' }] });
     throw new Error('unexpected ' + url);
   };

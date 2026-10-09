@@ -9,6 +9,7 @@ import { osvDetails, epss } from '../src/intel.mjs';
 import { assess } from '../src/assess.mjs';
 import { summary, plain, vex } from '../src/outputs.mjs';
 import { run, findLockfiles, readInputs, syncIssues, issueTitle, FORK_NOTE } from '../src/main.mjs';
+import { kevJson } from './kev-fixture.mjs';
 
 const ENV = ['INPUT_OUTPUT-DIR', 'INPUT_GITHUB-TOKEN', 'INPUT_FAIL-ON', 'INPUT_EPSS-THRESHOLD', 'INPUT_OPEN-ISSUES', 'INPUT_ALLOW-INCOMPLETE-INTEL', 'GITHUB_REPOSITORY', 'GITHUB_STEP_SUMMARY', 'GITHUB_OUTPUT', 'GITHUB_SERVER_URL', 'GITHUB_RUN_ID'];
 beforeEach(() => { for (const k of ENV) delete process.env[k]; process.env['INPUT_OUTPUT-DIR'] = 'out'; });
@@ -27,7 +28,7 @@ function fake({ failDetails = [], failEpss = false, gh = null } = {}) {
     for (const id of failDetails) if (url.includes('/vulns/' + id)) return new Response('nope', { status: 404 });
     if (url.includes('/vulns/' + LOG4J)) return Response.json({ id: LOG4J, aliases: ['CVE-2021-44228'], summary: 'Log4Shell', affected: [{ ranges: [{ events: [{ fixed: '2.15.0' }] }] }] });
     if (url.includes('/vulns/' + LODASH)) return Response.json({ id: LODASH, aliases: ['CVE-2021-23337'], summary: 'Command injection in lodash' });
-    if (url.includes('known_exploited')) return Response.json({ catalogVersion: '2026.10.06', vulnerabilities: [{ cveID: 'CVE-2021-44228', dateAdded: '2021-12-10', knownRansomwareCampaignUse: 'Known', requiredAction: 'Apply updates' }] });
+    if (url.includes('known_exploited')) return Response.json(kevJson([{ cveID: 'CVE-2021-44228', dateAdded: '2021-12-10', knownRansomwareCampaignUse: 'Known', requiredAction: 'Apply updates' }]));
     if (url.includes('api.first.org')) {
       if (failEpss) return new Response('bad', { status: 400 });
       return Response.json({ data: [{ cve: 'CVE-2021-44228', epss: '0.97', percentile: '0.999' }, { cve: 'CVE-2021-23337', epss: '0.02', percentile: '0.8' }] });
@@ -145,9 +146,10 @@ const exploitedFinding = (over = {}) => ({ fingerprint: 'pkg:npm/x@1|GHSA-1', ti
 test('issue sync: creates new issues, patches open ones keeping the clock, leaves closed ones alone', async () => {
   const { readState, issueBody } = await import('../src/outputs.mjs');
   const old = '2026-10-01T00:00:00.000Z';
+  const bot = { login: 'github-actions[bot]', type: 'Bot' };
   const existing = [
-    { number: 7, state: 'open', body: issueBody(exploitedFinding({ fingerprint: 'fp-open' }), { awareAt: old, product: 'p' }) },
-    { number: 8, state: 'closed', body: issueBody(exploitedFinding({ fingerprint: 'fp-closed' }), { awareAt: old, product: 'p' }) },
+    { number: 7, state: 'open', user: bot, body: issueBody(exploitedFinding({ fingerprint: 'fp-open' }), { awareAt: old, product: 'p' }) },
+    { number: 8, state: 'closed', user: bot, body: issueBody(exploitedFinding({ fingerprint: 'fp-closed' }), { awareAt: old, product: 'p' }) },
     { number: 9, state: 'open', pull_request: {}, body: '' },
   ];
   const writes = [];

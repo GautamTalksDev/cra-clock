@@ -31,9 +31,10 @@ inputs:
     default: cra-clock
 outputs:
   components: { description: Number of components found }
-  exploited: { description: Number of actively exploited vulnerabilities (CISA KEV) }
+  exploited: { description: "Number of actively exploited vulnerabilities (CISA KEV), or the word unknown when the KEV catalog could not be read" }
   likely: { description: Number of vulnerabilities above the EPSS threshold }
   intel-incomplete: { description: Number of advisories that could not be fully checked and need manual review }
+  kev-status: { description: "ok, or unknown when the CISA KEV catalog could not be read or was empty (exploitation status could not be confirmed; the job exits 2)" }
   sbom: { description: Path to the CycloneDX 1.6 SBOM }
   vex: { description: Path to the CycloneDX 1.6 VEX }
 runs:
