@@ -27,8 +27,9 @@ single reporting platform set up under the CRA. For an actively exploited vulner
 | **14 days** after a corrective or mitigating measure is available | Final report |
 
 This applies to products already on the market; the rest of the CRA (including the SBOM obligation) applies from
-11 December 2027. Large vendors have PSIRTs. Small software and IoT companies often find out a dependency is being
-exploited from a customer, long after the 24 hours started. CRA Clock covers actively exploited vulnerabilities in your
+11 December 2027. Large vendors have PSIRTs. Smaller teams without anyone watching their dependencies can learn about
+an exploited component late, for example from a customer report, while the 24 hours may already be running from the
+moment they could have known. CRA Clock covers actively exploited vulnerabilities in your
 dependencies; severe incidents are outside its scope.
 
 Primary sources: [Regulation (EU) 2024/2847 on EUR-Lex](https://eur-lex.europa.eu/eli/reg/2024/2847/oj) (Article 14,
