@@ -58,6 +58,7 @@ jobs:
           product-name: Acme Router
           open-issues: ${{ github.event_name != 'pull_request' }}
       - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}                  # keep the SBOM and VEX when the clock fails the job
         with: { name: cra-clock, path: cra-clock/ }
 ```
 
