@@ -117,7 +117,7 @@ $('demo').onclick = (ev) => {
 };
 
 async function scanFile(f) {
-  if (f.size > 20 * 1024 * 1024) return message('That file is too big for the browser scanner. The Action has no such limit.');
+  if (f.size > 20 * 1024 * 1024) return message('That file is too big for the browser scanner. The Action reads lockfiles up to 50 MB.');
   const name = f.name.split(/[\\/]/).pop();
   const text = await f.text();
   const kind = PARSERS[name] ? name : sniff(text);

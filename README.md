@@ -23,7 +23,7 @@ single reporting platform set up under the CRA. For an actively exploited vulner
 | When | What |
 |---|---|
 | **24 hours** after becoming aware | Early warning: exploited, which product, which Member States |
-| **72 hours** | Notification: severity, corrective and mitigating measures |
+| **72 hours** | Notification: nature of the exploit and the vulnerability, corrective and mitigating measures |
 | **14 days** after a corrective or mitigating measure is available | Final report |
 
 This applies to products already on the market; the rest of the CRA (including the SBOM obligation) applies from
@@ -90,7 +90,7 @@ flowchart LR
 - **Lockfiles**: `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `pnpm-lock.yaml`, `requirements.txt` (pinned),
   `poetry.lock`, `Pipfile.lock`, `go.mod`, `Cargo.lock`, `Gemfile.lock`, `composer.lock`, `gradle.lockfile`.
 - **Signal, not noise**: only CISA KEV evidence (reliable evidence of exploitation in the wild) starts the clock. High EPSS
-  is a warning. Everything else is listed in the report.
+  is a warning. Everything else is counted in the report and listed in the VEX.
 - **The clock never resets**: the first detection time is stored in the issue, so re-runs update the countdown instead of
   restarting it. Close the issue when the final report is filed.
 - **De-duplicated**: one finding per component and CVE, however many advisory ids describe it.
