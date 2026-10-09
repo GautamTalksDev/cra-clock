@@ -10,7 +10,7 @@ const FAIL_TTL = 300;
 const LATEST = 8;
 export const KEV_MIN = 1000; // the real catalog has about 1,400 entries and only grows
 // Cache keys carry a version so copies cached before the empty-catalog check cannot be served after a deploy.
-const KEY = '/kev.json?v=2', STALE_KEY = '/kev.json?stale=2';
+const KEY = '/kev.json?v=4', STALE_KEY = '/kev.json?stale=4';
 // Public catalog fields only, validated and length-capped, so nothing odd from upstream reaches the page.
 const clean = (s, n) => (typeof s === 'string' ? s.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, n) : '');
 /** the public mirror body for a KEV catalog document, or null if the document is not a plausible full catalog */
@@ -44,11 +44,14 @@ export default {
       try {
         // The edge may keep CISA's answer for no longer than a cached failure: our own cache below holds the good copy for
         // six hours, and a bad answer (an empty maintenance page) must not stick at the edge for that long.
-        const up = await fetch(KEV, { cf: { cacheTtl: FAIL_TTL }, redirect: 'error' });
+        // Workers only support 'follow' or 'manual'. With 'manual' a redirect comes back as a 3xx (not ok), so a moved or
+        // hijacked feed URL counts as a failure instead of being followed.
+        const up = await fetch(KEV, { cf: { cacheTtl: FAIL_TTL }, redirect: 'manual' });
         if (up.ok) {
           body = kevBody(await up.json()); // null for an empty or truncated catalog
-        }
-      } catch { body = null; }
+          if (!body) console.error('kev: upstream catalog empty or truncated');
+        } else console.error('kev: upstream status', up.status);
+      } catch (e) { body = null; console.error('kev: upstream fetch failed', String(e?.message || e).slice(0, 200)); }
       if (body) {
         const res = json(body, 21600);
         ctx.waitUntil(Promise.all([cache.put(key, res.clone()), cache.put(staleKey, json(body, 2592000))]));
