@@ -22,7 +22,7 @@ jobs:
         run: |
           if grep -rnP "[\x{2013}\x{2014}]" site/public README.md SECURITY.md docs; then exit 1; fi
   dogfood:
-    # The Action scans its own repository (no lockfiles of its own: it has no dependencies) plus a fixture project.
+    # The Action scans its own repository (no lockfiles of its own: it has no dependencies), so this checks a clean end to end run.
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: { contents: read }

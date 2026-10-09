@@ -37,5 +37,5 @@ Primary sources: [Regulation (EU) 2024/2847 on EUR-Lex](https://eur-lex.europa.e
 reporting obligations; Article 71, entry into force and application) and the European Commission's
 [CRA reporting obligations](https://digital-strategy.ec.europa.eu/en/policies/cra-reporting).
 
-Secondary: [STAR, CRA Article 14](https://star.global/posts/cyber-resilience-act-article-14-reporting-requirements/),
+Secondary: [STAR, CRA Article 14](https://star.global/insights/articles/cyber-resilience-act-article-14-reporting-requirements/),
 [HackerOne, CRA reporting goes live](https://www.hackerone.com/blog/eu-cra-reporting-requirements).
