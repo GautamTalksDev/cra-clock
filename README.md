@@ -10,7 +10,26 @@ something you ship is actively exploited it opens an issue with the Article 14 d
 
 [Website](https://craclock.gautamkhosla.com) · [Install](#install) · [What it does](#what-it-does) · [Outputs](#outputs) · [Security](SECURITY.md) · [CRA primer](docs/CRA.md)
 
+[![ci](https://github.com/GautamTalksDev/cra-clock/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GautamTalksDev/cra-clock/actions/workflows/ci.yml) [![release](https://img.shields.io/github/v/release/GautamTalksDev/cra-clock)](https://github.com/GautamTalksDev/cra-clock/releases) [![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-CRA%20Clock-blue?logo=github)](https://github.com/marketplace/actions/cra-clock) [![license](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
+<img src="docs/assets/scanner-demo.png" alt="The CRA Clock scanner on its built-in demo project: 3 actively exploited, 9 likely soon, 48 other known advisories, with log4j-core 2.14.1 and Log4Shell flagged as exploited." width="830">
+
+<sub>The scanner on <a href="https://craclock.gautamkhosla.com">craclock.gautamkhosla.com</a>, run on its built-in demo project (a Java service still shipping Log4Shell). The Action applies the same tiers to your lockfiles on every push.</sub>
+
 </div>
+
+## Quickstart
+
+Add these steps to a job (the full workflow, with the schedule, permissions and artifact upload, is under [Install](#install)):
+
+```yaml
+- uses: actions/checkout@v5
+- uses: GautamTalksDev/cra-clock@v1
+  with: { product-name: Acme Router }
+```
+
+No repository to wire up yet? [Scan a lockfile in your browser](https://craclock.gautamkhosla.com): nothing is installed
+and the lockfile never leaves your browser.
 
 ---
 
@@ -38,7 +57,7 @@ reporting; Article 71, dates of application) and the European Commission's
 
 ## Install
 
-The GitHub Marketplace listing goes live with v1.0.0. Until then, reference the Action by repository as shown below.
+CRA Clock is on the [GitHub Marketplace](https://github.com/marketplace/actions/cra-clock). Reference the Action by repository as shown below.
 
 ```yaml
 # .github/workflows/cra-clock.yml
